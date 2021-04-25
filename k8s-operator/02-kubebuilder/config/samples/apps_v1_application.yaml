@@ -1,0 +1,7 @@
+apiVersion: apps.lailin.xyz/v1
+kind: Application
+metadata:
+  name: application-sample
+spec:
+  # Add fields here
+  product: test
