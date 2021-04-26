@@ -1,0 +1,16 @@
+domain: lailin.xyz
+layout:
+- go.kubebuilder.io/v3
+projectName: 03-node-pool-operator
+repo: github.com/mohuishou/blog-code/k8s-operator/03-node-pool-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: lailin.xyz
+  group: nodes
+  kind: NodePool
+  path: github.com/mohuishou/blog-code/k8s-operator/03-node-pool-operator/api/v1
+  version: v1
+version: "3"
