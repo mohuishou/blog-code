@@ -33,11 +33,14 @@ type NodePoolSpec struct {
 
 	// Labels 标签
 	Labels map[string]string `json:"labels,omitempty"`
+
+	// Handler 对应 Runtime Class 的 Handler
+	Handler string `json:"handler"`
 }
 
-// Node 生成 Node 结构，可以用于 Patch 数据
+// ApplyNode 生成 Node 结构，可以用于 Patch 数据
 func (s *NodePoolSpec) ApplyNode(node corev1.Node) *corev1.Node {
-	for k,  v:= range s.Labels {
+	for k, v := range s.Labels {
 		node.Labels[k] = v
 	}
 	node.Spec.Taints = append(node.Spec.Taints, s.Taints...)
@@ -67,6 +70,7 @@ func (n *NodePool) NodeRole() string {
 	return "node-role.kubernetes.io/" + n.Name
 }
 
+// NodeLabelSelector 返回节点 label 选择器
 func (n *NodePool) NodeLabelSelector() labels.Selector {
 	return labels.SelectorFromSet(map[string]string{
 		n.NodeRole(): "",
