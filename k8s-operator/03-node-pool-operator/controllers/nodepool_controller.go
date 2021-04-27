@@ -49,7 +49,7 @@ type NodePoolReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.7.2/pkg/reconcile
 func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = r.Log.WithValues("nodepool", req.Name)
+	_ = r.Log.WithValues("nodepool", req.NamespacedName)
 	// 获取对象
 	pool := &nodesv1.NodePool{}
 	if err := r.Get(ctx, req.NamespacedName, pool); err != nil {
@@ -59,25 +59,30 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	var nodes corev1.NodeList
 
 	// 查看是否存在对应的节点，如果存在那么就给这些节点加上数据
-	r.List(ctx, &nodes, &client.ListOptions{LabelSelector: pool.NodeLabelSelector()})
+	err := r.List(ctx, &nodes, &client.ListOptions{LabelSelector: pool.NodeLabelSelector()})
+	if client.IgnoreNotFound(err) != nil {
+		return ctrl.Result{}, err
+	}
+
 	if len(nodes.Items) > 0 {
+		r.Log.Info("find nodes, will merge data", "nodes", len(nodes.Items))
 		for _, n := range nodes.Items {
 			n := n
-			err := r.Patch(ctx, &n, client.MergeFrom(pool.Spec.Node()))
+			err := r.Patch(ctx, pool.Spec.ApplyNode(n), client.Merge)
 			if err != nil {
 				return ctrl.Result{}, err
 			}
 		}
 	}
 
-	var runtimeClasss v1beta1.RuntimeClass
-	err := r.Get(ctx, client.ObjectKeyFromObject(pool.RuntimeClass()), &runtimeClasss)
+	var runtimeClass v1beta1.RuntimeClass
+	err = r.Get(ctx, client.ObjectKeyFromObject(pool.RuntimeClass()), &runtimeClass)
 	if client.IgnoreNotFound(err) != nil {
 		return ctrl.Result{}, err
 	}
 
 	// 如果不存在创建一个新的
-	if runtimeClasss.Name == "" {
+	if runtimeClass.Name == "" {
 		err = r.Create(ctx, pool.RuntimeClass())
 		if err != nil {
 			return ctrl.Result{}, err

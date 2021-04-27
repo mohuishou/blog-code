@@ -36,15 +36,12 @@ type NodePoolSpec struct {
 }
 
 // Node 生成 Node 结构，可以用于 Patch 数据
-func (s *NodePoolSpec) Node() *corev1.Node {
-	return &corev1.Node{
-		ObjectMeta: metav1.ObjectMeta{
-			Labels: s.Labels,
-		},
-		Spec: corev1.NodeSpec{
-			Taints: s.Taints,
-		},
+func (s *NodePoolSpec) ApplyNode(node corev1.Node) *corev1.Node {
+	for k,  v:= range s.Labels {
+		node.Labels[k] = v
 	}
+	node.Spec.Taints = append(node.Spec.Taints, s.Taints...)
+	return &node
 }
 
 // NodePoolStatus defines the observed state of NodePool

@@ -8,4 +8,4 @@ spec:
       value: master
       effect: NoSchedule
   labels:
-    "node-pool.lailin.xyz/master": ""
+    "node-pool.lailin.xyz/master": "7"
