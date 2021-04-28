@@ -36,6 +36,9 @@ spec:
           spec:
             description: NodePoolSpec 节点池，一个节点可能会属于多个节点池
             properties:
+              handler:
+                description: Handler 对应 Runtime Class 的 Handler
+                type: string
               labels:
                 additionalProperties:
                   type: string
@@ -68,6 +71,8 @@ spec:
                   - key
                   type: object
                 type: array
+            required:
+            - handler
             type: object
           status:
             description: NodePoolStatus defines the observed state of NodePool

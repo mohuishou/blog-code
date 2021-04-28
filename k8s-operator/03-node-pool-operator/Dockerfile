@@ -3,6 +3,7 @@ FROM golang:1.15 as builder
 
 WORKDIR /workspace
 # Copy the Go Modules manifests
+ENV GOPROXY="https://goproxy.cn"
 COPY go.mod go.mod
 COPY go.sum go.sum
 # cache deps before building and copying source so that we don't need to re-download as much

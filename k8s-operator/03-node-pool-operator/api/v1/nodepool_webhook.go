@@ -19,6 +19,8 @@ package v1
 import (
 	"regexp"
 
+	"github.com/pkg/errors"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
@@ -26,7 +28,10 @@ import (
 )
 
 // log is for logging in this package.
-var nodepoollog = logf.Log.WithName("nodepool-resource")
+var (
+	nodePoolLog = logf.Log.WithName("nodepool-resource")
+	keyReg      = regexp.MustCompile(`^node-pool.lailin.xyz/*[a-zA-z0-9]*$`)
+)
 
 func (r *NodePool) SetupWebhookWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
@@ -42,7 +47,7 @@ var _ webhook.Defaulter = &NodePool{}
 
 // Default implements webhook.Defaulter so a webhook will be registered for the type
 func (r *NodePool) Default() {
-	nodepoollog.Info("default", "name", r.Name)
+	nodePoolLog.Info("default", "name", r.Name)
 
 	// 默认 handler 为 runc
 	r.Spec.Handler = "runc"
@@ -55,23 +60,21 @@ var _ webhook.Validator = &NodePool{}
 
 // ValidateCreate implements webhook.Validator so a webhook will be registered for the type
 func (r *NodePool) ValidateCreate() error {
-	nodepoollog.Info("validate create", "name", r.Name)
+	nodePoolLog.Info("validate create", "name", r.Name)
 
-	// TODO(user): fill in your validation logic upon object creation.
-	return nil
+	return r.validate()
 }
 
 // ValidateUpdate implements webhook.Validator so a webhook will be registered for the type
 func (r *NodePool) ValidateUpdate(old runtime.Object) error {
-	nodepoollog.Info("validate update", "name", r.Name)
+	nodePoolLog.Info("validate update", "name", r.Name)
 
-	// TODO(user): fill in your validation logic upon object update.
-	return nil
+	return r.validate()
 }
 
 // ValidateDelete implements webhook.Validator so a webhook will be registered for the type
 func (r *NodePool) ValidateDelete() error {
-	nodepoollog.Info("validate delete", "name", r.Name)
+	nodePoolLog.Info("validate delete", "name", r.Name)
 
 	// TODO(user): fill in your validation logic upon object deletion.
 	return nil
@@ -79,10 +82,17 @@ func (r *NodePool) ValidateDelete() error {
 
 // validate 验证
 func (r *NodePool) validate() error {
-	reg := regexp.MustCompile(`^node-pool.lailin.xyz/*[a-zA-z0-9]*$`)
+	err := errors.Errorf("taint or label key must validatedy by %s", keyReg.String())
 
-	for k := range r.Labels {
-		if !reg.MatchString(k) {
+	for k := range r.Spec.Labels {
+		if !keyReg.MatchString(k) {
+			return errors.WithMessagef(err, "label key: %s", k)
+		}
+	}
+
+	for _, taint := range r.Spec.Taints {
+		if !keyReg.MatchString(taint.Key) {
+			return errors.WithMessagef(err, "taint key: %s", taint.Key)
 		}
 	}
 

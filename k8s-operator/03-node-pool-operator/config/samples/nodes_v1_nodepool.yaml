@@ -3,9 +3,10 @@ kind: NodePool
 metadata:
   name: master
 spec:
-  taints:
-    - key: node-pool.lailin.xyz
-      value: master
-      effect: NoSchedule
+#  taints:
+#    - key: node-pool.lailin.xyz
+#      value: master
+#      effect: NoSchedule
   labels:
-    "node-pool.lailin.xyz/master": "7"
+    "xxxx": "7"
+  handler: runc
