@@ -26,7 +26,8 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// NodePoolSpec 节点池，一个节点可能会属于多个节点池
+// NodePoolSpec 节点池，MVP 版本只允许一个节点属于一个节点池
+// TODO: 后续需要支持一个节点属于多个资源池
 type NodePoolSpec struct {
 	// Taints 污点
 	Taints []corev1.Taint `json:"taints,omitempty"`
@@ -35,15 +36,34 @@ type NodePoolSpec struct {
 	Labels map[string]string `json:"labels,omitempty"`
 
 	// Handler 对应 Runtime Class 的 Handler
-	Handler string `json:"handler"`
+	Handler string `json:"handler,omitempty"`
 }
 
 // ApplyNode 生成 Node 结构，可以用于 Patch 数据
 func (s *NodePoolSpec) ApplyNode(node corev1.Node) *corev1.Node {
-	for k, v := range s.Labels {
-		node.Labels[k] = v
+	// 如果节点上存在不属于当前节点池的标签，我们就清除掉
+	// 注意：这里的逻辑如果一个节点属于多个节点池会出现问题
+	nodeLabels := map[string]string{}
+	for k, v := range node.Labels {
+		if !keyReg.MatchString(k) {
+			nodeLabels[k] = v
+		}
 	}
-	node.Spec.Taints = append(node.Spec.Taints, s.Taints...)
+
+	for k, v := range s.Labels {
+		nodeLabels[k] = v
+	}
+	node.Labels = nodeLabels
+
+	// 污点同理
+	var taints []corev1.Taint
+	for _, taint := range node.Spec.Taints {
+		if !keyReg.MatchString(taint.Key) {
+			taints = append(taints, taint)
+		}
+	}
+
+	node.Spec.Taints = append(taints, s.Taints...)
 	return &node
 }
 
@@ -92,7 +112,7 @@ func (n *NodePool) RuntimeClass() *v1beta1.RuntimeClass {
 
 	return &v1beta1.RuntimeClass{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: n.Name,
+			Name: "node-pool-" + n.Name,
 		},
 		Handler: "runc",
 		Scheduling: &v1beta1.Scheduling{

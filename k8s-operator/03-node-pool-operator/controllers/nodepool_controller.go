@@ -41,7 +41,7 @@ type NodePoolReconciler struct {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
+// Modify the Reconcile function to compare the state specified by
 // the NodePool object against the actual cluster state, and then
 // perform operations to make the cluster state reflect the state specified by
 // the user.
@@ -68,7 +68,7 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		r.Log.Info("find nodes, will merge data", "nodes", len(nodes.Items))
 		for _, n := range nodes.Items {
 			n := n
-			err := r.Patch(ctx, pool.Spec.ApplyNode(n), client.Merge)
+			err := r.Update(ctx, pool.Spec.ApplyNode(n))
 			if err != nil {
 				return ctrl.Result{}, err
 			}
@@ -84,12 +84,12 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// 如果不存在创建一个新的
 	if runtimeClass.Name == "" {
 		err = r.Create(ctx, pool.RuntimeClass())
-		if err != nil {
-			return ctrl.Result{}, err
-		}
+		return ctrl.Result{}, err
 	}
 
-	return ctrl.Result{}, nil
+	// 如果存在则更新
+	err = r.Client.Patch(ctx, pool.RuntimeClass(), client.Merge)
+	return ctrl.Result{}, err
 }
 
 // SetupWithManager sets up the controller with the Manager.
