@@ -19,6 +19,8 @@ package controllers
 import (
 	"context"
 
+	"k8s.io/client-go/tools/record"
+
 	"github.com/go-logr/logr"
 	nodesv1 "github.com/mohuishou/blog-code/k8s-operator/03-node-pool-operator/api/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -31,8 +33,9 @@ import (
 // NodePoolReconciler reconciles a NodePool object
 type NodePoolReconciler struct {
 	client.Client
-	Log    logr.Logger
-	Scheme *runtime.Scheme
+	Log      logr.Logger
+	Scheme   *runtime.Scheme
+	Recorder record.EventRecorder
 }
 
 //+kubebuilder:rbac:groups=nodes.lailin.xyz,resources=nodepools,verbs=get;list;watch;create;update;patch;delete
@@ -55,7 +58,6 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	if err := r.Get(ctx, req.NamespacedName, pool); err != nil {
 		return ctrl.Result{}, err
 	}
-
 	var nodes corev1.NodeList
 
 	// 查看是否存在对应的节点，如果存在那么就给这些节点加上数据
@@ -68,6 +70,11 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		r.Log.Info("find nodes, will merge data", "nodes", len(nodes.Items))
 		for _, n := range nodes.Items {
 			n := n
+
+			if !nodeReady(n.Status) {
+				pool.Status.NotReadyNodeCount++
+			}
+
 			err := r.Update(ctx, pool.Spec.ApplyNode(n))
 			if err != nil {
 				return ctrl.Result{}, err
@@ -89,6 +96,15 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	// 如果存在则更新
 	err = r.Client.Patch(ctx, pool.RuntimeClass(), client.Merge)
+	if err != nil {
+		return ctrl.Result{}, err
+	}
+
+	// 设置 status
+	pool.Status.Status = 200
+	pool.Status.NodeCount = len(nodes.Items)
+	err = r.Status().Update(ctx, pool)
+	r.Recorder.Event(pool, corev1.EventTypeNormal, "Info", "test event")
 	return ctrl.Result{}, err
 }
 
@@ -97,4 +113,13 @@ func (r *NodePoolReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&nodesv1.NodePool{}).
 		Complete(r)
+}
+
+func nodeReady(status corev1.NodeStatus) bool {
+	for _, condition := range status.Conditions {
+		if condition.Status == "True" && condition.Type == "Ready" {
+			return true
+		}
+	}
+	return false
 }

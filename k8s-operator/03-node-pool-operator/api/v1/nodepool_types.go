@@ -69,8 +69,9 @@ func (s *NodePoolSpec) ApplyNode(node corev1.Node) *corev1.Node {
 
 // NodePoolStatus defines the observed state of NodePool
 type NodePoolStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
+	Status            int `json:"status"`
+	NodeCount         int `json:"nodeCount"`
+	NotReadyNodeCount int `json:"notReadyNodeCount"`
 }
 
 //+kubebuilder:object:root=true

@@ -72,6 +72,7 @@ func main() {
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "97acaccf.lailin.xyz",
+		CertDir:                "config/cert/", // 手动指定证书位置用于测试
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -79,9 +80,10 @@ func main() {
 	}
 
 	if err = (&controllers.NodePoolReconciler{
-		Client: mgr.GetClient(),
-		Log:    ctrl.Log.WithName("controllers").WithName("NodePool"),
-		Scheme: mgr.GetScheme(),
+		Client:   mgr.GetClient(),
+		Log:      ctrl.Log.WithName("controllers").WithName("NodePool"),
+		Scheme:   mgr.GetScheme(),
+		Recorder: mgr.GetEventRecorderFor("NodePool"),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "NodePool")
 		os.Exit(1)

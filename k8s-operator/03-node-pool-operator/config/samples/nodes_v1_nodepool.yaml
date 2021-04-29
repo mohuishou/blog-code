@@ -8,5 +8,5 @@ spec:
 #      value: master
 #      effect: NoSchedule
   labels:
-    "node-pool.lailin.xyz/xxx": "7"
+    "node-pool.lailin.xyz/master": "7"
   handler: runc

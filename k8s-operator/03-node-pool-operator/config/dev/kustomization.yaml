@@ -1,0 +1,19 @@
+resources:
+- ../default
+
+patches:
+- patch: |
+    - op: "add"
+      path: "/webhooks/0/clientConfig/url"
+      value: "https://host.docker.internal:9443/mutate-nodes-lailin-xyz-v1-nodepool"
+  target:
+    kind: MutatingWebhookConfiguration
+- patch: |
+    - op: "add"
+      path: "/webhooks/0/clientConfig/url"
+      value: "https://host.docker.internal:9443/validate-nodes-lailin-xyz-v1-nodepool"
+  target:
+    kind: ValidatingWebhookConfiguration
+- path: webhook_patch.yaml
+  target:
+    group: admissionregistration.k8s.io
