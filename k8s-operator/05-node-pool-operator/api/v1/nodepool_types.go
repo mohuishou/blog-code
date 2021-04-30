@@ -84,6 +84,7 @@ type NodePoolStatus struct {
 }
 
 //+kubebuilder:object:root=true
+//+kubebuilder:resource:scope=Cluster
 //+kubebuilder:subresource:status
 
 // NodePool is the Schema for the nodepools API

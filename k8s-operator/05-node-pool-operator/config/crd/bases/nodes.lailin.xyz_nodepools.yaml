@@ -14,7 +14,7 @@ spec:
     listKind: NodePoolList
     plural: nodepools
     singular: nodepool
-  scope: Namespaced
+  scope: Cluster
   versions:
   - name: v1
     schema:
