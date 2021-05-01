@@ -18,6 +18,19 @@ package controllers
 
 import (
 	"context"
+	"strings"
+	"time"
+
+	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	"k8s.io/apimachinery/pkg/types"
+
+	"sigs.k8s.io/controller-runtime/pkg/handler"
+
+	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"k8s.io/client-go/util/workqueue"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 
 	"k8s.io/client-go/tools/record"
 
@@ -164,7 +177,52 @@ func (r *NodePoolReconciler) nodeFinalizer(ctx context.Context, pool *nodesv1.No
 func (r *NodePoolReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&nodesv1.NodePool{}).
+		Watches(&source.Kind{Type: &corev1.Node{}}, handler.Funcs{UpdateFunc: r.nodeUpdateHandler}).
 		Complete(r)
+}
+
+func (r *NodePoolReconciler) nodeUpdateHandler(e event.UpdateEvent, q workqueue.RateLimitingInterface) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	oldPool, err := r.getNodePoolByLabels(ctx, e.ObjectOld.GetLabels())
+	if err != nil {
+		r.Log.Error(err, "get node pool err")
+	}
+	if oldPool != nil {
+		q.Add(reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: oldPool.Name},
+		})
+	}
+
+	newPool, err := r.getNodePoolByLabels(ctx, e.ObjectOld.GetLabels())
+	if err != nil {
+		r.Log.Error(err, "get node pool err")
+	}
+	if newPool != nil {
+		q.Add(reconcile.Request{
+			NamespacedName: types.NamespacedName{Name: newPool.Name},
+		})
+	}
+}
+
+func (r *NodePoolReconciler) getNodePoolByLabels(ctx context.Context, labels map[string]string) (*nodesv1.NodePool, error) {
+	pool := &nodesv1.NodePool{}
+	for k := range labels {
+		ss := strings.Split(k, "node-role.kubernetes.io/")
+		if len(ss) != 2 {
+			continue
+		}
+		err := r.Client.Get(ctx, types.NamespacedName{Name: ss[1]}, pool)
+		if err == nil {
+			return pool, nil
+		}
+
+		if client.IgnoreNotFound(err) != nil {
+			return nil, err
+		}
+	}
+	return nil, nil
 }
 
 func nodeReady(status corev1.NodeStatus) bool {
