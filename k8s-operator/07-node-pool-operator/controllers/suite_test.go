@@ -17,8 +17,12 @@ limitations under the License.
 package controllers
 
 import (
+	"context"
 	"path/filepath"
 	"testing"
+	"time"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -72,6 +76,27 @@ var _ = BeforeSuite(func() {
 	Expect(k8sClient).NotTo(BeNil())
 
 }, 60)
+
+var _ = Describe("node labels", func() {
+	pool := &nodesv1.NodePool{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test",
+		},
+		Spec: nodesv1.NodePoolSpec{
+			Labels: map[string]string{
+				"node-pool.lailin.xyz/xxx": "",
+			},
+			Handler: "",
+		},
+	}
+
+	It("create pool", func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		err := k8sClient.Create(ctx, pool)
+		Expect(err).NotTo(HaveOccurred())
+	})
+})
 
 var _ = AfterSuite(func() {
 	By("tearing down the test environment")

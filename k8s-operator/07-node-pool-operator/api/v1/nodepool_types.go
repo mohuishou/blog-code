@@ -73,7 +73,7 @@ func (s *NodePoolSpec) ApplyNode(node corev1.Node) *corev1.Node {
 	}
 
 	n.Spec.Taints = append(n.Spec.Taints, s.Taints...)
-	return &node
+	return n
 }
 
 // NodePoolStatus defines the observed state of NodePool
