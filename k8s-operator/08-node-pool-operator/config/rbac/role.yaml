@@ -1,0 +1,34 @@
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - nodes.lailin.xyz
+  resources:
+  - nodepools
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - nodes.lailin.xyz
+  resources:
+  - nodepools/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - nodes.lailin.xyz
+  resources:
+  - nodepools/status
+  verbs:
+  - get
+  - patch
+  - update
