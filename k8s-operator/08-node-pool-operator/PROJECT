@@ -13,4 +13,8 @@ resources:
   kind: NodePool
   path: github.com/mohuishou/blog-code/k8s-operator/node-pool-operator/api/v1
   version: v1
+  webhooks:
+    defaulting: true
+    validation: true
+    webhookVersion: v1
 version: "3"

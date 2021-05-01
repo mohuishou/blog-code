@@ -72,7 +72,7 @@ func main() {
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "97acaccf.lailin.xyz",
-		CertDir:                "config/cert/", // 手动指定证书位置用于测试
+		// CertDir:                "config/cert/", // 手动指定证书位置用于测试
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
@@ -89,6 +89,10 @@ func main() {
 		os.Exit(1)
 	}
 
+	if err = (&nodesv1.NodePool{}).SetupWebhookWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create webhook", "webhook", "NodePool")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

@@ -16,7 +16,7 @@ spec:
   selector:
     matchLabels:
       control-plane: controller-manager
-  replicas: 0
+  replicas: 1
   template:
     metadata:
       labels:

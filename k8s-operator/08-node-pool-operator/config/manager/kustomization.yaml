@@ -15,4 +15,4 @@ configMapGenerator:
 images:
 - name: controller
   newName: controller
-  newTag: latest
+  newTag: latest-2
