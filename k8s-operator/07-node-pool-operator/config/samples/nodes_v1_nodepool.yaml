@@ -1,0 +1,8 @@
+apiVersion: nodes.lailin.xyz/v1
+kind: NodePool
+metadata:
+  name: worker
+spec:
+  labels:
+    "node-pool.lailin.xyz/xxx": "10"
+  handler: runc
