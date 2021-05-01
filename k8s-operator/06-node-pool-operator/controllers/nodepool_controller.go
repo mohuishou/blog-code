@@ -19,8 +19,6 @@ package controllers
 import (
 	"context"
 
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
-
 	"k8s.io/client-go/tools/record"
 
 	"github.com/go-logr/logr"
@@ -88,6 +86,8 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 
 	if len(nodes.Items) > 0 {
 		r.Log.Info("find nodes, will merge data", "nodes", len(nodes.Items))
+		pool.Status.Allocatable = corev1.ResourceList{}
+		pool.Status.NodeCount = len(nodes.Items)
 		for _, n := range nodes.Items {
 			n := n
 
@@ -95,6 +95,16 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 			err := r.Update(ctx, pool.Spec.ApplyNode(n))
 			if err != nil {
 				return ctrl.Result{}, err
+			}
+
+			for name, quantity := range n.Status.Allocatable {
+				q, ok := pool.Status.Allocatable[name]
+				if ok {
+					q.Add(quantity)
+					pool.Status.Allocatable[name] = q
+					continue
+				}
+				pool.Status.Allocatable[name] = quantity
 			}
 		}
 	}
@@ -108,7 +118,7 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 	// 如果不存在创建一个新的
 	if runtimeClass.Name == "" {
 		runtimeClass = pool.RuntimeClass()
-		err = controllerutil.SetOwnerReference(pool, runtimeClass, r.Scheme)
+		err = ctrl.SetControllerReference(pool, runtimeClass, r.Scheme)
 		if err != nil {
 			return ctrl.Result{}, err
 		}
@@ -124,6 +134,8 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, err
 	}
 
+	pool.Status.Status = 200
+	err = r.Status().Update(ctx, pool)
 	return ctrl.Result{}, err
 }
 

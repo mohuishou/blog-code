@@ -78,11 +78,19 @@ func (s *NodePoolSpec) ApplyNode(node corev1.Node) *corev1.Node {
 
 // NodePoolStatus defines the observed state of NodePool
 type NodePoolStatus struct {
-	Status            int `json:"status"`
-	NodeCount         int `json:"nodeCount"`
-	NotReadyNodeCount int `json:"notReadyNodeCount"`
+
+	// status=200 说明正常，其他情况为异常情况
+	Status int `json:"status"`
+
+	// 节点的数量
+	NodeCount int `json:"nodeCount"`
+
+	// 允许被调度的容量
+	Allocatable corev1.ResourceList `json:"allocatable,omitempty" protobuf:"bytes,2,rep,name=allocatable,casttype=ResourceList,castkey=ResourceName"`
 }
 
+//+kubebuilder:printcolumn:JSONPath=".status.status",name=Status,type=integer
+//+kubebuilder:printcolumn:JSONPath=".status.nodeCount",name=NodeCount,type=integer
 //+kubebuilder:object:root=true
 //+kubebuilder:resource:scope=Cluster
 //+kubebuilder:subresource:status

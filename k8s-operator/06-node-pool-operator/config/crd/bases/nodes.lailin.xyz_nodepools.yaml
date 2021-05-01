@@ -16,7 +16,14 @@ spec:
     singular: nodepool
   scope: Cluster
   versions:
-  - name: v1
+  - additionalPrinterColumns:
+    - jsonPath: .status.status
+      name: Status
+      type: integer
+    - jsonPath: .status.nodeCount
+      name: NodeCount
+      type: integer
+    name: v1
     schema:
       openAPIV3Schema:
         description: NodePool is the Schema for the nodepools API
@@ -75,15 +82,23 @@ spec:
           status:
             description: NodePoolStatus defines the observed state of NodePool
             properties:
+              allocatable:
+                additionalProperties:
+                  anyOf:
+                  - type: integer
+                  - type: string
+                  pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
+                  x-kubernetes-int-or-string: true
+                description: 允许被调度的容量
+                type: object
               nodeCount:
-                type: integer
-              notReadyNodeCount:
+                description: 节点的数量
                 type: integer
               status:
+                description: status=200 说明正常，其他情况为异常情况
                 type: integer
             required:
             - nodeCount
-            - notReadyNodeCount
             - status
             type: object
         type: object

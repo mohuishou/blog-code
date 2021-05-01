@@ -1,12 +1,12 @@
 apiVersion: nodes.lailin.xyz/v1
 kind: NodePool
 metadata:
-  name: master
+  name: worker
 spec:
   taints:
     - key: node-pool.lailin.xyz
-      value: master
+      value: worker
       effect: NoSchedule
   labels:
-    "node-pool.lailin.xyz/master": "10"
+    "node-pool.lailin.xyz/worker": "10"
   handler: runc

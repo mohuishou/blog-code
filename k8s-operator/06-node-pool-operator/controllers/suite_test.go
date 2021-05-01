@@ -30,7 +30,7 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	nodesv1 "github.com/mohuishou/blog-code/k8s-operator/ode-pool-operator/api/v1"
+	nodesv1 "github.com/mohuishou/blog-code/k8s-operator/node-pool-operator/api/v1"
 	//+kubebuilder:scaffold:imports
 )
 
