@@ -134,6 +134,9 @@ func (r *NodePoolReconciler) Reconcile(ctx context.Context, req ctrl.Request) (c
 		return ctrl.Result{}, err
 	}
 
+	// 添加测试事件
+	r.Recorder.Event(pool, corev1.EventTypeNormal, "test", "test")
+
 	pool.Status.Status = 200
 	err = r.Status().Update(ctx, pool)
 	return ctrl.Result{}, err
