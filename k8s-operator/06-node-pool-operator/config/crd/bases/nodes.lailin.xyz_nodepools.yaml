@@ -1,0 +1,99 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
+  name: nodepools.nodes.lailin.xyz
+spec:
+  group: nodes.lailin.xyz
+  names:
+    kind: NodePool
+    listKind: NodePoolList
+    plural: nodepools
+    singular: nodepool
+  scope: Cluster
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: NodePool is the Schema for the nodepools API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: 'NodePoolSpec 节点池，MVP 版本只允许一个节点属于一个节点池 TODO: 后续需要支持一个节点属于多个资源池'
+            properties:
+              handler:
+                description: Handler 对应 Runtime Class 的 Handler
+                type: string
+              labels:
+                additionalProperties:
+                  type: string
+                description: Labels 标签
+                type: object
+              taints:
+                description: Taints 污点
+                items:
+                  description: The node this Taint is attached to has the "effect"
+                    on any pod that does not tolerate the Taint.
+                  properties:
+                    effect:
+                      description: Required. The effect of the taint on pods that
+                        do not tolerate the taint. Valid effects are NoSchedule, PreferNoSchedule
+                        and NoExecute.
+                      type: string
+                    key:
+                      description: Required. The taint key to be applied to a node.
+                      type: string
+                    timeAdded:
+                      description: TimeAdded represents the time at which the taint
+                        was added. It is only written for NoExecute taints.
+                      format: date-time
+                      type: string
+                    value:
+                      description: The taint value corresponding to the taint key.
+                      type: string
+                  required:
+                  - effect
+                  - key
+                  type: object
+                type: array
+            type: object
+          status:
+            description: NodePoolStatus defines the observed state of NodePool
+            properties:
+              nodeCount:
+                type: integer
+              notReadyNodeCount:
+                type: integer
+              status:
+                type: integer
+            required:
+            - nodeCount
+            - notReadyNodeCount
+            - status
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
