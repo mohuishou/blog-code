@@ -27,7 +27,7 @@ func Test_buildTree(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := buildTree(tt.preorder, tt.inorder)
-			assert.Equal(t, got, NewTreeNode(tt.want, 0))
+			assert.Equal(t, tt.want, got.array())
 		})
 	}
 }

@@ -37,6 +37,17 @@ func (n *TreeNode) array() []int {
 			next = append(next, n.Left)
 			next = append(next, n.Right)
 		}
+
+		allNil := true
+		for _, n := range next {
+			if n != nil {
+				allNil = false
+				break
+			}
+		}
+		if allNil {
+			next = []*TreeNode{}
+		}
 		current = next
 	}
 	return res
