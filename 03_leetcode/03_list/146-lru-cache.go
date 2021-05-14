@@ -6,6 +6,7 @@ import (
 
 type LRUCache struct {
 	root     *LRUCacheNode
+	data     map[int]*LRUCacheNode
 	length   int
 	capacity int
 }
@@ -24,27 +25,26 @@ func Constructor(capacity int) LRUCache {
 	return LRUCache{
 		root:     n,
 		capacity: capacity,
+		data:     map[int]*LRUCacheNode{},
 	}
 }
 
 func (this *LRUCache) find(key int) *LRUCacheNode {
-	n := this.root.next
-	for n != this.root {
-		if n.key == key {
-			// 将当前节点从现在的位置上摘除
-			n.prev.next = n.next
-			n.next.prev = n.prev
-			// 将当前节点移动到第一个
-			head := this.root.next
-			this.root.next = n
-			n.prev = this.root
-			n.next = head
-			head.prev = n
-			return n
-		}
-		n = n.next
+	n := this.data[key]
+	if n == nil {
+		return n
 	}
-	return nil
+
+	// 将当前节点从现在的位置上摘除
+	n.prev.next = n.next
+	n.next.prev = n.prev
+	// 将当前节点移动到第一个
+	head := this.root.next
+	this.root.next = n
+	n.prev = this.root
+	n.next = head
+	head.prev = n
+	return n
 }
 
 func (this *LRUCache) Get(key int) int {
@@ -63,6 +63,8 @@ func (this *LRUCache) Put(key int, value int) {
 	}
 
 	node = &LRUCacheNode{key: key, val: value}
+	this.data[key] = node
+
 	head := this.root.next
 	this.root.next = node
 	node.prev = this.root
@@ -71,6 +73,7 @@ func (this *LRUCache) Put(key int, value int) {
 
 	if this.capacity == this.length {
 		last := this.root.prev
+		this.data[last.key] = nil
 		last.prev.next = this.root
 		this.root.prev = last.prev
 		return
