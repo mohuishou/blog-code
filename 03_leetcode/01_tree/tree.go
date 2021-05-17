@@ -11,6 +11,9 @@ func NewTreeNode(data []int, i int) *TreeNode {
 	if len(data) <= i || data[i] == null {
 		return nil
 	}
+	if i == 11 {
+		_ = i
+	}
 	n := &TreeNode{Val: data[i]}
 	n.Left = NewTreeNode(data, 2*i+1)
 	n.Right = NewTreeNode(data, 2*i+2)
