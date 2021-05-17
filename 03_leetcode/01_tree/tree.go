@@ -7,17 +7,39 @@ type TreeNode struct {
 
 var null int = -1e9
 
+// 兼容
 func NewTreeNode(data []int, i int) *TreeNode {
-	if len(data) <= i || data[i] == null {
+	return NewTree(data)
+}
+
+func NewTree(data []int) *TreeNode {
+	if len(data) == 0 {
 		return nil
 	}
-	if i == 11 {
-		_ = i
+	root := NewTreeNodeVal(data[0])
+	current := []*TreeNode{root}
+
+	for i := 1; len(current) > 0 && i < len(data); {
+		var next []*TreeNode
+		for _, n := range current {
+			if n == nil {
+				continue
+			}
+			n.Left = NewTreeNodeVal(data[i])
+			n.Right = NewTreeNodeVal(data[i+1])
+			next = append(next, n.Left, n.Right)
+			i += 2
+		}
+		current = next
 	}
-	n := &TreeNode{Val: data[i]}
-	n.Left = NewTreeNode(data, 2*i+1)
-	n.Right = NewTreeNode(data, 2*i+2)
-	return n
+	return root
+}
+
+func NewTreeNodeVal(v int) *TreeNode {
+	if v == null {
+		return nil
+	}
+	return &TreeNode{Val: v}
 }
 
 func (n *TreeNode) array() []int {
