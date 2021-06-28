@@ -195,7 +195,7 @@ func (r *NodePoolReconciler) nodeUpdateHandler(e event.UpdateEvent, q workqueue.
 		})
 	}
 
-	newPool, err := r.getNodePoolByLabels(ctx, e.ObjectOld.GetLabels())
+	newPool, err := r.getNodePoolByLabels(ctx, e.ObjectNew.GetLabels())
 	if err != nil {
 		r.Log.Error(err, "get node pool err")
 	}
