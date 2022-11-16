@@ -1,0 +1,16 @@
+domain: lailin.xyz
+layout:
+- go.kubebuilder.io/v3
+projectName: operator-kubebuilder-clientset
+repo: github.com/mohuishou/blog-code/02-k8s-operator/operator-kubebuilder-clientset
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: lailin.xyz
+  group: job
+  kind: Test
+  path: github.com/mohuishou/blog-code/02-k8s-operator/operator-kubebuilder-clientset/api/job/v1
+  version: v1
+version: "3"

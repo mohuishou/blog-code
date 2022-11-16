@@ -1,0 +1,12 @@
+apiVersion: job.lailin.xyz/v1
+kind: Test
+metadata:
+  labels:
+    app.kubernetes.io/name: test
+    app.kubernetes.io/instance: test-sample
+    app.kubernetes.io/part-of: operator-kubebuilder-clientset
+    app.kuberentes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: operator-kubebuilder-clientset
+  name: test-sample
+spec:
+  foo: "test"
