@@ -1,0 +1,16 @@
+domain: lailin.xyz
+layout:
+- go.kubebuilder.io/v3
+projectName: multi-cluster-operator
+repo: github.com/mohuishou/blog-code/02-k8s-operator/multi-cluster-operator
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: lailin.xyz
+  group: job
+  kind: Test
+  path: github.com/mohuishou/blog-code/02-k8s-operator/multi-cluster-operator/api/v1
+  version: v1
+version: "3"

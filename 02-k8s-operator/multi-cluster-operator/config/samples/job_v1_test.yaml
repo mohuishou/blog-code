@@ -1,0 +1,6 @@
+apiVersion: job.lailin.xyz/v1
+kind: Test
+metadata:
+  name: test-sample
+spec:
+  image: busybox
